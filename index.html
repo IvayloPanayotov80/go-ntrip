@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="bg">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Температурни канали</title>
+    <link rel="stylesheet" href="/workspace/styles.css" />
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" />
+  </head>
+  <body>
+    <header class="app-header">
+      <h1 class="app-title">Температурни канали (последни 24 часа)</h1>
+      <button id="settingsBtn" class="icon-button" title="Настройки" aria-label="Настройки">
+        <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true">
+          <path fill="currentColor" d="M12 8a4 4 0 100 8 4 4 0 000-8zm9.4 4a7.4 7.4 0 00-.12-1l2.12-1.65a.5.5 0 00.12-.66l-2-3.46a.5.5 0 00-.6-.22l-2.5 1a7.7 7.7 0 00-1.74-1l-.38-2.65A.5.5 0 0015.8 1h-3.6a.5.5 0 00-.49.41l-.38 2.65a7.7 7.7 0 00-1.74 1l-2.5-1a.5.5 0 00-.6.22l-2 3.46a.5.5 0 00.12.66L3.72 11a7.4 7.4 0 000 2l-2.12 1.65a.5.5 0 00-.12.66l2 3.46a.5.5 0 00.6.22l2.5-1c.53.4 1.12.74 1.74 1l.38 2.65a.5.5 0 00.49.41h3.6a.5.5 0 00.49-.41l.38-2.65c.62-.26 1.21-.6 1.74-1l2.5 1a.5.5 0 00.6-.22l2-3.46a.5.5 0 00-.12-.66L21.28 13c.08-.33.12-.66.12-1z"/>
+        </svg>
+      </button>
+    </header>
+
+    <main class="layout">
+      <aside class="channels" id="channelsList" aria-label="Списък канали">
+        <!-- Channel rows rendered by JS -->
+      </aside>
+      <section class="chart-area">
+        <div class="chart-toolbar">
+          <div class="toolbar-left">
+            <button id="resetZoomBtn" class="secondary-button">Нулирай зуум</button>
+          </div>
+          <div class="toolbar-right">
+            <span class="hint">Зуум: колелце/пинч, пан: drag</span>
+          </div>
+        </div>
+        <canvas id="tempChart" height="240"></canvas>
+      </section>
+    </main>
+
+    <div id="passwordModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="pwdTitle">
+      <div class="modal-content">
+        <h2 id="pwdTitle">Парола за настройки</h2>
+        <p class="muted">Въведете паролата, за да отворите настройките.</p>
+        <input id="pwdInput" type="password" class="input" placeholder="Парола" />
+        <div class="modal-actions">
+          <button id="pwdCancel" class="secondary-button">Откажи</button>
+          <button id="pwdConfirm" class="primary-button">Продължи</button>
+        </div>
+        <p id="pwdError" class="error hidden">Невярна парола</p>
+      </div>
+    </div>
+
+    <!-- Vendor scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1/dist/chartjs-plugin-zoom.umd.min.js"></script>
+
+    <!-- App scripts -->
+    <script src="/workspace/app.js"></script>
+  </body>
+</html>
