@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Настройки – Температура</title>
+  <style>
+    :root {
+      --bg: #0f1115;
+      --panel: #151925;
+      --panel-2: #1b2030;
+      --text: #e6e9ef;
+      --muted: #9aa3b2;
+      --accent: #5b9cff;
+      --ring: rgba(91, 156, 255, 0.4);
+      --ok: #18b26b;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: radial-gradient(1200px 800px at 80% -10%, #17203a 0%, #0f1115 50%, #0f1115 100%); color: var(--text); font: 14px/1.4 system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
+    header { position: sticky; top: 0; z-index: 3; display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; background: rgba(15,17,21,0.7); backdrop-filter: blur(8px); border-bottom: 1px solid rgba(255,255,255,0.06); }
+    a.back { color: var(--text); text-decoration: none; font-weight: 600; padding: 8px 10px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); border-radius: 10px; }
+    a.back:hover { border-color: var(--ring); box-shadow: 0 0 0 3px var(--ring) inset; }
+
+    .wrap { max-width: 1000px; margin: 0 auto; padding: 16px; display: grid; gap: 16px; }
+
+    .card { background: linear-gradient(180deg, var(--panel), var(--panel-2)); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 14px; }
+    .card h2 { margin: 6px 6px 12px; font-size: 16px; }
+    .grid { display: grid; gap: 12px; }
+
+    .fieldset { border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 12px; background: rgba(255,255,255,0.03); }
+    .legend { font-weight: 700; color: var(--muted); margin-bottom: 10px; }
+
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+    @media (max-width: 760px) { .row, .row-3 { grid-template-columns: 1fr; } }
+
+    label { font-size: 12px; color: var(--muted); display: block; margin-bottom: 6px; }
+    input[type="text"], input[type="number"], input[type="password"], input[type="color"] {
+      width: 100%; padding: 10px 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.04); color: var(--text);
+    }
+    .btn {
+      appearance: none; border: 1px solid rgba(255,255,255,0.12); color: var(--text); background: rgba(91,156,255,0.1);
+      border-radius: 12px; padding: 10px 14px; font-weight: 700; cursor: pointer; min-width: 120px;
+    }
+    .btn:hover { border-color: var(--ring); box-shadow: 0 0 0 3px var(--ring) inset; }
+
+    .login-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center; z-index: 10; }
+    .login-box { width: min(92vw, 420px); background: linear-gradient(180deg, var(--panel), var(--panel-2)); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 16px; }
+
+    .muted { color: var(--muted); }
+  </style>
+</head>
+<body>
+  <header>
+    <div style="display:flex; align-items:center; gap:10px; font-weight:700;">Настройки</div>
+    <a class="back" href="index.html">← Назад</a>
+  </header>
+
+  <div class="wrap">
+    <div class="card">
+      <h2>Канали (8)</h2>
+      <div id="channels" class="grid"></div>
+    </div>
+
+    <div class="card">
+      <h2>Wi‑Fi мрежи (до 3)</h2>
+      <div id="wifi" class="grid"></div>
+    </div>
+
+    <div class="card">
+      <h2>Достъп</h2>
+      <div class="grid">
+        <div class="fieldset">
+          <div class="legend">Парола за достъп до настройки</div>
+          <div class="row">
+            <div>
+              <label for="settingsPassword">Нова парола (по подразбиране: без парола)</label>
+              <input type="password" id="settingsPassword" placeholder="оставете празно за без парола" autocomplete="new-password" />
+            </div>
+            <div>
+              <label for="settingsPassword2">Повторете паролата</label>
+              <input type="password" id="settingsPassword2" placeholder="повторете паролата" autocomplete="new-password" />
+            </div>
+          </div>
+        </div>
+        <div style="display:flex; gap:10px; align-items:center;">
+          <button id="saveBtn" class="btn">Запази</button>
+          <span id="saveMsg" class="muted"></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="login-overlay" id="loginOverlay">
+    <div class="login-box">
+      <div style="font-weight:800; margin-bottom:8px;">Вход в настройки</div>
+      <div class="muted" style="margin-bottom:10px;">Моля, въведете парола за достъп.</div>
+      <div class="row">
+        <div>
+          <label for="loginPwd">Парола</label>
+          <input type="password" id="loginPwd" placeholder="парола" />
+        </div>
+      </div>
+      <div style="display:flex; gap:10px; margin-top:12px;">
+        <button id="loginBtn" class="btn">Вход</button>
+        <button id="loginCancel" class="btn" style="background: rgba(255,255,255,0.05);">Отказ</button>
+      </div>
+      <div id="loginErr" class="muted" style="margin-top:8px; color:#ffb4b4;"></div>
+    </div>
+  </div>
+
+  <script>
+    const DEFAULT_COLORS = ['#ff6b6b','#5b9cff','#ffd166','#06d6a0','#c77dff','#4cc9f0','#f8961e','#2ec4b6'];
+
+    function loadConfig() {
+      const stored = localStorage.getItem('thermoConfig');
+      if (stored) { try { return JSON.parse(stored); } catch { /* ignore */ } }
+      const channels = Array.from({length: 8}).map((_, i) => ({
+        id: i,
+        name: `Канал ${i+1}`,
+        color: DEFAULT_COLORS[i % DEFAULT_COLORS.length],
+        address: `28-00000${(i+1).toString().padStart(6,'0')}`,
+        levelOn: 25,
+        levelOff: 22
+      }));
+      const cfg = { channels };
+      localStorage.setItem('thermoConfig', JSON.stringify(cfg));
+      return cfg;
+    }
+
+    function loadWifi() {
+      const s = localStorage.getItem('thermoNetworks');
+      if (s) { try { const v = JSON.parse(s); if (Array.isArray(v)) return v; } catch { } }
+      return [{ssid:'',pass:''},{ssid:'',pass:''},{ssid:'' ,pass:''}];
+    }
+
+    function renderChannels(cfg) {
+      const root = document.getElementById('channels');
+      root.innerHTML = '';
+      cfg.channels.forEach((ch, i) => {
+        const fs = document.createElement('div'); fs.className = 'fieldset';
+        const legend = document.createElement('div'); legend.className = 'legend'; legend.textContent = `Канал ${i+1}`; fs.appendChild(legend);
+        const row1 = document.createElement('div'); row1.className = 'row';
+        row1.innerHTML = `
+          <div>
+            <label>Име на канал</label>
+            <input type="text" value="${ch.name}" data-field="name" data-idx="${i}" />
+          </div>
+          <div>
+            <label>Адрес на температурна сонда</label>
+            <input type="text" value="${ch.address}" data-field="address" data-idx="${i}" />
+          </div>
+        `;
+        const row2 = document.createElement('div'); row2.className = 'row-3';
+        row2.innerHTML = `
+          <div>
+            <label>Ниво ON (°C)</label>
+            <input type="number" step="0.1" value="${ch.levelOn}" data-field="levelOn" data-idx="${i}" />
+          </div>
+          <div>
+            <label>Ниво OFF (°C)</label>
+            <input type="number" step="0.1" value="${ch.levelOff}" data-field="levelOff" data-idx="${i}" />
+          </div>
+          <div>
+            <label>Цвят</label>
+            <input type="color" value="${ch.color}" data-field="color" data-idx="${i}" />
+          </div>
+        `;
+        fs.append(row1, row2);
+        root.append(fs);
+      });
+    }
+
+    function renderWifi(networks) {
+      const root = document.getElementById('wifi');
+      root.innerHTML = '';
+      networks.forEach((w, i) => {
+        const fs = document.createElement('div'); fs.className = 'fieldset';
+        const legend = document.createElement('div'); legend.className = 'legend'; legend.textContent = `Мрежа ${i+1}`; fs.appendChild(legend);
+        const row = document.createElement('div'); row.className = 'row';
+        row.innerHTML = `
+          <div>
+            <label>SSID</label>
+            <input type="text" value="${w.ssid||''}" data-wifi-field="ssid" data-idx="${i}" />
+          </div>
+          <div>
+            <label>Парола</label>
+            <input type="text" value="${w.pass||''}" data-wifi-field="pass" data-idx="${i}" />
+          </div>
+        `;
+        fs.append(row);
+        root.append(fs);
+      });
+    }
+
+    function collectChannelsFromUI(cfg) {
+      const result = JSON.parse(JSON.stringify(cfg));
+      document.querySelectorAll('[data-field]').forEach(inp => {
+        const idx = Number(inp.dataset.idx);
+        const field = inp.dataset.field;
+        let val = inp.value;
+        if (field === 'levelOn' || field === 'levelOff') val = Number(val);
+        result.channels[idx][field] = val;
+      });
+      return result;
+    }
+    function collectWifiFromUI(networks) {
+      const next = networks.map(n => ({...n}));
+      document.querySelectorAll('[data-wifi-field]').forEach(inp => {
+        const idx = Number(inp.dataset.idx);
+        const field = inp.dataset.wifiField;
+        next[idx][field] = inp.value;
+      });
+      return next;
+    }
+
+    function ensureAuth() {
+      const savedPwd = localStorage.getItem('thermoSettingsPassword') || '';
+      if (!savedPwd) return true; // no password -> allowed
+      if (sessionStorage.getItem('thermoSettingsAuthed') === '1') return true;
+      const overlay = document.getElementById('loginOverlay');
+      overlay.style.display = 'flex';
+      return false;
+    }
+
+    // Init UI
+    const cfg = loadConfig();
+    const wifis = loadWifi();
+    renderChannels(cfg);
+    renderWifi(wifis);
+
+    // Auth flow
+    if (!ensureAuth()) {
+      document.getElementById('loginBtn').addEventListener('click', () => {
+        const pwd = localStorage.getItem('thermoSettingsPassword') || '';
+        const input = document.getElementById('loginPwd').value;
+        if (input === pwd) {
+          sessionStorage.setItem('thermoSettingsAuthed', '1');
+          document.getElementById('loginOverlay').style.display = 'none';
+        } else {
+          document.getElementById('loginErr').textContent = 'Грешна парола.';
+        }
+      });
+      document.getElementById('loginCancel').addEventListener('click', () => {
+        window.location.href = 'index.html';
+      });
+    }
+
+    // Save
+    document.getElementById('saveBtn').addEventListener('click', () => {
+      // channels
+      const nextCfg = collectChannelsFromUI(cfg);
+      localStorage.setItem('thermoConfig', JSON.stringify(nextCfg));
+      // wifi
+      const nextWifi = collectWifiFromUI(wifis);
+      localStorage.setItem('thermoNetworks', JSON.stringify(nextWifi));
+      // password
+      const p1 = document.getElementById('settingsPassword').value;
+      const p2 = document.getElementById('settingsPassword2').value;
+      if (p1 || p2) {
+        if (p1 !== p2) { alert('Паролите не съвпадат.'); return; }
+        localStorage.setItem('thermoSettingsPassword', p1);
+        if (p1) {
+          sessionStorage.setItem('thermoSettingsAuthed', '1');
+        } else {
+          sessionStorage.removeItem('thermoSettingsAuthed');
+        }
+      }
+      const msg = document.getElementById('saveMsg');
+      msg.textContent = 'Запазено.';
+      setTimeout(() => msg.textContent = '', 2000);
+    });
+  </script>
+</body>
+</html>
