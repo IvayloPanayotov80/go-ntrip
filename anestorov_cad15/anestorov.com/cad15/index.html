@@ -1,0 +1,1038 @@
+<!DOCTYPE>
+<html>
+
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta charset="UTF-8">
+    <title>Leaflet Geometry Management</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@latest/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/@geoman-io/leaflet-geoman-free@latest/dist/leaflet-geoman.css" />
+    <!--<link rel="stylesheet" href="leaflet-geoman.css" />-->
+    <link rel="stylesheet" href="leaflet-measure-path.css" />
+
+    <script src="https://unpkg.com/leaflet@latest/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/@geoman-io/leaflet-geoman-free@latest/dist/leaflet-geoman.min.js"></script>
+    <!-- 2.11.4 -->
+    <script src="leaflet-measure-path.js"></script>
+    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/proj4js/2.5.0/proj4.js"></script> -->
+    <!-- <script src="https://cdn.jsdelivr.net/npm/leaflet-bing-layer@3.3.1/leaflet-bing-layer.min.js"></script> -->
+    <script src="https://unpkg.com/shpjs@latest/dist/shp.js"></script>
+    <script src="shpwrite.js"></script>
+
+    <style>
+        html,
+        body {
+            font-family: Arial, Verdana;
+            background-color: #eef1ef;
+            font-size: 16px;
+            width: 100%;
+            height: 100%;
+            margin: 0;
+        }
+
+        .wrapper {
+            width: 100%;
+            height: calc(100% - 1.8em);
+        }
+
+        #map {
+            height: 100%
+        }
+
+        .map_types {
+            background-color: white;
+            opacity: 0.8;
+            border-radius: 5px;
+            position: fixed;
+            display: flex;
+            top: 2.2em;
+            right: 5px;
+            z-index: 999;
+            color: black;
+            padding: 5px;
+        }
+
+        .searchBox {
+            display: flex;
+        }
+
+        .searchBox input[type="text"] {
+            width: calc(100% - 90px);
+            font-size: larger;
+        }
+
+        .searchBox input[type="button"] {
+            width: 90px;
+            font-size: larger;
+        }
+
+        .infoIcon {
+            background-image: url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNiIgaGVpZ2h0PSIxNiIgZmlsbD0iY3VycmVudENvbG9yIiBjbGFzcz0iYmkgYmktaW5mby1jaXJjbGUiIHZpZXdCb3g9IjAgMCAxNiAxNiI+CiAgPHBhdGggZD0iTTggMTVBNyA3IDAgMSAxIDggMWE3IDcgMCAwIDEgMCAxNHptMCAxQTggOCAwIDEgMCA4IDBhOCA4IDAgMCAwIDAgMTZ6Ii8+CiAgPHBhdGggZD0ibTguOTMgNi41ODgtMi4yOS4yODctLjA4Mi4zOC40NS4wODNjLjI5NC4wNy4zNTIuMTc2LjI4OC40NjlsLS43MzggMy40NjhjLS4xOTQuODk3LjEwNSAxLjMxOS44MDggMS4zMTkuNTQ1IDAgMS4xNzgtLjI1MiAxLjQ2NS0uNTk4bC4wODgtLjQxNmMtLjIuMTc2LS40OTIuMjQ2LS42ODYuMjQ2LS4yNzUgMC0uMzc1LS4xOTMtLjMwNC0uNTMzTDguOTMgNi41ODh6TTkgNC41YTEgMSAwIDEgMS0yIDAgMSAxIDAgMCAxIDIgMHoiLz4KPC9zdmc+);
+        }
+
+        .shapeFileIcon {
+            background-image: url('data:image/jpeg;base64,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');
+        }
+
+        .geoJsonIcon {
+            background-image: url('data:image/jpeg;base64,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');
+        }
+
+        .saveIcon {
+            background-image: url('data:image/jpeg;base64,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');
+        }
+
+        .homeIcon {
+            background-image: url('data:image/png;base64,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');
+        }
+
+        #infoDialogWrapper {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: rgba(0, 0, 0, 0.35);
+            z-index: 9999;
+            display: none;
+            align-items: center;
+            justify-content: center;
+
+        }
+
+        #infoDialog {
+            width: 500px;
+            max-width: 80%;
+            border: 1px solid black;
+            background-color: white;
+            padding: 10px;
+            border-radius: 10px;
+        }
+
+        .alert {
+            position: fixed;
+            padding: 20px;
+            width: 60%;
+            top: 15%;
+            left: 20%;
+            z-index: 9999;
+            background-color: rgba(70, 70, 70, 0.9);
+            color: rgb(255, 255, 255);
+            text-align: center;
+            border-radius: 10px;
+            color: rgb(255, 255, 255);
+        }
+
+        .loadingInfo {
+            position: fixed;
+            bottom: -0.5em;
+            left: 10;
+            z-index: 9999;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="searchBox">
+        <input type="text" placeholder="Въведете екатте" id="ekatte" />
+        <input type="button" value="Търсене" id="searchEkatte" />
+    </div>
+    <!-- <div class="alert"><p style="color:red">Приложението Временно не работи! </div> -->
+    <div class="wrapper">
+        <div id="map"></div>
+    </div>
+    <div class="map_types">
+
+        <label><input type="radio" name="mapType" value="streets" checked />Карта</label>
+        <label><input type="radio" name="mapType" value="sattelite" />Сателит</label>
+        <label><input type="radio" name="mapType" value="no" />Прозрачно</label>
+    </div>
+    <div id="infoDialogWrapper">
+        <div id="infoDialog" onclick="event.stopPropagation();">
+            <button style="float: right;" id="infoDialogClose">X</button>
+            <p id="infoDialogContent"></p>
+        </div>
+    </div>
+    <p class="loadingInfo" id="loadingInfo"></p>
+    <input type="file" id="theFile" style="display:none" />
+
+    <script>
+        const map = L.map('map', { attributionControl: false, zoomControl: false }).setView([42.136097, 24.742168], 12);
+        const maps = {};
+
+        if (window.AndroidGSM) L.control.attribution({ prefix: '<a href="index.html#">inspire.egov.bg</a>' }).addTo(map);
+        else L.control.attribution({ prefix: '<a href="https://inspire.egov.bg/">inspire.egov.bg</a>' }).addTo(map);
+
+
+        L.control.zoom({
+            position: 'bottomright'
+        }).addTo(map);
+
+
+        maps['streets'] = L.tileLayer('https://a.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 23,
+            maxNativeZoom: 19,
+            pmIgnore: true,
+            attribution: window.AndroidGSM ? '&copy; <a href="index.html#">OpenStreetMap</a>' : '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+        });
+
+        maps['sattelite'] = L.tileLayer('https://mt.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', {
+            maxZoom: 23,
+            maxNativeZoom: 20,
+            id: 'google',
+            attribution: window.AndroidGSM ? '&copy; <a href="index.html#">Google Maps</a>' : '&copy; <a href="https://www.google.com/maps">Google Maps</a>'
+        });
+
+        let mapTypes = document.querySelectorAll("[name='mapType']");
+        mapTypes.forEach(mt => {
+            if (mt.checked) {
+                setMap(mt.value);
+            }
+            mt.addEventListener("change", function (e) {
+                setMap(e.target.value);
+                //showAlert(e.target.value);
+            });
+        });
+
+        function setMap(type) {
+            Object.keys(maps).forEach(k => {
+                map.removeLayer(maps[k]);
+            });
+            if (maps[type]) maps[type].addTo(map).bringToBack();
+
+            if (type == 'no' && map.getZoom() <= 17) {
+                map.setZoom(17);
+            }
+        }
+
+        let loadingLayers = 0;
+        function changeLoadingLayers(by) {
+            loadingLayers += by;
+            if (loadingLayers <= 0) {
+                loadingLayers = 0;
+                document.querySelector("#loadingInfo").innerHTML = "";
+            }
+            else document.querySelector("#loadingInfo").innerHTML = "Зареждащи се слоеве: " + loadingLayers;
+        }
+        changeLoadingLayers(0);
+
+
+        function processSVG(data, ind, tile) {
+            let doc = new window.DOMParser().parseFromString(data, "text/xml")
+
+            //tile.classList.remove("leaflet-tile");
+            const svg = doc.getElementsByTagName('svg')[0];
+            svg.querySelector("g > g > rect").setAttribute('fill-opacity', 0);
+
+            svg.querySelectorAll('#Labels style').forEach(s => {
+                s.remove();
+            });
+
+            svg.querySelectorAll('#Labels g[font-family]').forEach(g => {
+                g.setAttribute('font-family', '');
+            });
+
+
+            if (ind == 1) {
+                svg.querySelectorAll('#CP\\.CadastralParcel path[stroke="#000000"]').forEach(p => {
+                    p.setAttribute('stroke', '#FF0000');
+                });
+
+                svg.querySelectorAll('#Labels [fill="#000000"]').forEach(p => {
+                    p.setAttribute('fill', '#FF0000');
+                });
+            }
+            if (ind == 2) {
+                svg.querySelectorAll('#BU\\.Building path[fill="#808080"]').forEach(p => {
+                    p.setAttribute('fill', '#f2e82c');
+                    p.setAttribute('fill-opacity', 0.4);
+                });
+
+                svg.querySelectorAll('#Labels > g[transform]').forEach(g => {
+                    g.remove();
+                });
+            }
+
+            tile.src = 'data:image/svg+xml;base64,' + btoa(svg.outerHTML);
+            svg.remove();
+
+            // const scr = document.createElement('script');
+            // scr.type = 'text/ecmascript';
+            // scr.innerHTML = `<![CDATA[
+
+            //         document.querySelectorAll("path").forEach(p=>{
+            //             console.log(p);
+            //             p.addEventListener('click',e=>{
+            //                 console.log(e);
+            //             });
+            //         });
+            //     ]]>`;
+            // svg.appendChild(scr);
+
+            // tile.querySelectorAll("path").forEach(p=>{
+            //         //console.log(p);
+            //     p.addEventListener('click',e=>{
+            //         console.log(e);
+            //     });
+            // });
+
+            //tile.dispatchEvent(new Event("load"));
+
+            //console.log(tile);
+        }
+
+        function proxyRes(id, ind, data) {
+            if (ind == "Search") {
+                let res = JSON.parse(atob(data));
+                if (res.results && res.results[0]) {
+                    doSearchReturn(res.results[0].geometry.rings);
+                }
+                else {
+                    doSearchError("Обекта не е намерен!");
+                }
+            } else if (ind == 'Select') {
+                let doc = new window.DOMParser().parseFromString(atob(data), "text/xml");
+
+                const f = doc.getElementsByTagName("FIELDS")[0];
+
+                //console.log(f);
+
+                const id = f.getAttribute('Uniqueidentifier');
+                const area = f.getAttribute('areaValue') + ' ' + f.getAttribute('areaValue_uom');
+                const ekatte = f.getAttribute('nationalCadastralReference');
+                const validFrom = f.getAttribute('validFrom');
+
+                getInfoReturn(`Поземплен имот: ${ekatte} с площ: ${area}, кадастрален номер: ${id}, валиден от: ${validFrom}.`)
+            } else {
+                let elm = document.querySelector(id);
+                if (elm) {
+                    processSVG(atob(data), ind, elm)
+                }
+                changeLoadingLayers(-1);
+            }
+
+        }
+        function proxyError() {
+            if (ind == "Search") {
+                doSearchError("Грешка при зареждането!");
+            } else if (ind == 'Select') {
+                getInfoError();
+            } else {
+                changeLoadingLayers(-1);
+            }
+        }
+        //AndroidGSM.proxy('https://cyberfx.org/test.php', 'TEST','TEST');
+        
+
+        let wmsFactory = (url, ind, obj, loading) => {
+            let wms = L.TileLayer.WMS.extend({
+                createTile(coords, done) {
+                    let tile = document.createElement('img');
+
+                    L.DomEvent.on(tile, 'load', this._tileOnLoad.bind(this, done, tile));
+                    L.DomEvent.on(tile, 'error', this._tileOnError.bind(this, done, tile));
+
+                    tile.alt = '';
+
+                    let id = `img_${ind}_${coords.x}_${coords.y}_${coords.z}`;
+                    tile.id = id;
+
+                    if (loading) tile.src = "loading.gif";
+
+                    //if(coords.z<18) return tile;
+
+                    changeLoadingLayers(1);
+
+                    if (window.AndroidGSM) {
+                        // let src = this.getTileUrl(coords).split("?");
+                        // src = src[1].trim();
+                        // src = src + "&FORMAT_OPTIONS=dpi:200&TILED=true";
+
+                        AndroidGSM.proxy(this.getTileUrl(coords), id, ind);
+                    } else {
+
+                        let controller = new AbortController();
+
+                        const intv = setInterval(() => {
+                            if (!document.querySelector("#" + id)) {
+                                controller.abort();
+                                clearInterval(intv);
+                            }
+                        }, 100);
+
+                        window.fetch(this.getTileUrl(coords), { signal: controller.signal })
+                            .then(res => res.text())
+                            .then(data => processSVG(data, ind, tile))
+                            .catch(e => {
+                                tile.dispatchEvent(new Event("error"))
+                                console.error(e);
+                            })
+                            .finally(() => changeLoadingLayers(-1));
+                    }
+                    return tile;
+                },
+            });
+            return new wms(url, obj);
+        }
+
+        let wmsServers = {
+            shown: false,
+            m1: wmsFactory('https://inspire.cadastre.bg/arcgis/services/Cadastral_Parcel/MapServer/WMSServer', 1, {
+                layers: '0',
+                styles: '',
+                format: 'image/svg',
+                transparent: true,
+                version: '1.3.0',
+                uppercase: true,
+                minZoom: 16,
+                maxZoom: 23,
+                tileSize: 640,
+                //crs: L.CRS.EPSG4326,
+            }),
+            m2: wmsFactory('https://inspire.cadastre.bg/arcgis/services/Building/MapServer/WMSServer', 2, {
+                layers: '0',
+                styles: '',
+                format: 'image/svg',
+                transparent: true,
+                version: '1.3.0',
+                uppercase: true,
+                minZoom: 17,
+                maxZoom: 23,
+                tileSize: 640,
+                //crs: L.CRS.EPSG4326,
+            }),
+            addTo(map) {
+                if (this.shown) return;
+                this.m1.addTo(map);
+                this.m2.addTo(map);
+                this.shown = true;
+            },
+            remove() {
+                if (!this.shown) return;
+                this.m1.remove();
+                this.m2.remove();
+                this.shown = false;
+            }
+        }
+
+
+
+        function setTileData(id, data) {
+            let elm = document.querySelector(id);
+            if (elm) elm.src = data;
+        }
+
+
+
+        var lastbound, lastzoom;
+
+        var size = map.getSize();
+
+        map.on("moveend", function () {
+            wmsServers.addTo(map);
+        });
+
+        var InfoState = false;
+
+
+
+        map.on('click', function (e) {
+            if (InfoState) {
+                const lbox = L.latLng(e.latlng).toBounds(0.1);
+                const sw = lbox.getSouthWest();
+                const ne = lbox.getNorthEast();
+                getInfoPrepare();
+                const url = 'https://inspire.cadastre.bg/arcgis/services/Cadastral_Parcel/MapServer/WMSServer';
+                let params = `SERVICE=WMS&VERSION=1.3.0&REQUEST=GetFeatureInfo&QUERY_LAYERS=0&INFO_FORMAT=text/xml&CRS=EPSG:4326&WIDTH=1&HEIGHT=1`;
+                params += `&BBOX=${sw.lat},${sw.lng},${ne.lat},${ne.lng}`;
+
+                if (window.AndroidGSM) {
+                    AndroidGSM.proxy(`${url}?${params}`, 'Select','Select');
+                } else {
+                    window.fetch(`${url}?${params}`).then(res => res.text()).then(str => new window.DOMParser().parseFromString(str, "text/xml"))
+                        .then(doc => {
+                            const f = doc.getElementsByTagName("FIELDS")[0];
+
+                            console.log(f);
+
+                            const id = f.getAttribute('Uniqueidentifier');
+                            const area = f.getAttribute('areaValue') + ' ' + f.getAttribute('areaValue_uom');
+                            const ekatte = f.getAttribute('nationalCadastralReference');
+                            const validFrom = f.getAttribute('validFrom');
+
+                            getInfoReturn(`Поземплен имот: ${ekatte} с площ: ${area}, кадастрален номер: ${id}, валиден от: ${validFrom}.`)
+
+                        }).catch(е => { getInfoError() });
+                }
+
+
+                // if (InfoState === true) {
+                //     showAlert("Трябва да изберете тип на обекта!");
+                //     return;
+                // }
+                // document.querySelector("#infoDialogContent").innerHTML = 'Зареждане на данни ...<br/><br/><i>Моля изчакайте</i>';
+                // document.querySelector("#infoDialogWrapper").style.display = 'flex';
+
+                // if (window.AndroidGSM) {
+                //     AndroidGSM.getInfo(InfoState, e.latlng.lat, e.latlng.lng);
+                // } else {
+                //     window.fetch(`http://127.0.0.1:88/?type=info&layer=${InfoState}&lat=${e.latlng.lat}&lng=${e.latlng.lng}`)
+                //         .then((res) => res.text()).then((res) => {
+                //             getInfoReturn(res);
+                //         }).catch(e => {
+                //             getInfoError(e);
+                //         });
+                // }
+
+
+                // if (InfoState != "SURVEY_POINT_PGIS") {
+                //     if (searchPolygon) searchPolygon.remove();
+                //     searchPolygon = null;
+
+                //     if (window.AndroidGSM) {
+                //         AndroidGSM.doSelect(InfoState, e.latlng.lat, e.latlng.lng);
+                //     } else {
+                //         window.fetch(`http://127.0.0.1:88/?type=select&layer=${InfoState}&lat=${e.latlng.lat}&lng=${e.latlng.lng}`)
+                //             .then((res) => res.text()).then((res) => {
+                //                 doSelectReturn(res);
+                //             }).catch(e => {
+                //                 doSelectError(e);
+                //             });
+                //     }
+                // }
+            }
+        });
+
+        document.querySelector("#infoDialogWrapper").addEventListener('click', () => {
+            document.querySelector("#infoDialogWrapper").style.display = 'none';
+        });
+
+        document.querySelector("#infoDialogClose").addEventListener('click', () => {
+            document.querySelector("#infoDialogWrapper").style.display = 'none';
+        });
+
+
+
+        var searchPolygon = null;
+        document.querySelector('#searchEkatte').addEventListener('click', () => {
+
+            if (document.querySelector('#ekatte').disabled) {
+                document.querySelector('#ekatte').value = "";
+                document.querySelector('#ekatte').disabled = false;
+                document.querySelector('#searchEkatte').value = "Търсене";
+                if (searchPolygon) searchPolygon.remove();
+                searchPolygon = null;
+            }
+            else {
+                let val = document.querySelector('#ekatte').value.trim();
+                let pos1 = val.indexOf('.');
+                let pos2 = val.indexOf('.', pos1 + 1);
+                let parts = val.split(".");
+                if (val == '' || !(pos1 > 0) || !(pos2 > 0)) {
+                    showAlert("Трябва да въведете валидно ЕКАТТЕ във формат землище.район.имот!");
+                    return
+                }
+
+                document.querySelector('#ekatte').disabled = true;
+                document.querySelector('#searchEkatte').value = "Изчисти"
+
+                let dblayer = "Cadastral_Parcel";
+                let dbparam = "nationalCadastralReference";
+                if (parts.length > 3) {
+                    dblayer = "Building";
+                    dbparam = "id_localid";
+                }
+
+                if (window.AndroidGSM) {
+                    AndroidGSM.proxy(`https://inspire.cadastre.bg/arcgis/rest/services/${dblayer}/MapServer/find?searchText=${val}&contains=false&searchFields=${dbparam}&layers=0&returnGeometry=true&returnZ=false&returnM=false&returnUnformattedValues=false&returnFieldName=false&f=pjson`, 'Search','Search');
+                } else {
+                    window.fetch(`https://inspire.cadastre.bg/arcgis/rest/services/${dblayer}/MapServer/find?searchText=${val}&contains=false&searchFields=${dbparam}&layers=0&returnGeometry=true&returnZ=false&returnM=false&returnUnformattedValues=false&returnFieldName=false&f=pjson`)
+                        .then((res) => res.json()).then((res) => {
+
+                            if (res.results && res.results[0]) {
+                                doSearchReturn(res.results[0].geometry.rings);
+                            }
+                            else {
+                                doSearchError("Обекта не е намерен!");
+                            }
+                        }).catch(() => {
+                            doSearchError("Грешка при зареждането!");
+                        });
+                }
+            }
+        });
+        let clearButtons = () => {
+            document.querySelectorAll('.leaflet-pm-action').forEach(elm => {
+                elm.style.color = "white";
+            })
+        }
+        map.pm.Toolbar.createCustomControl({
+            name: 'InfoButton',
+            block: 'options',
+            title: 'Информация за имот',
+            className: 'infoIcon',
+            toggle: true,
+            actions: [
+                'cancel',
+            ],
+            afterClick(e, btn) {
+                InfoState = !!btn.button._button.toggleStatus;
+                clearButtons();
+            }
+        });
+
+        map.pm.Toolbar.createCustomControl({
+            name: 'HomeButton',
+            block: 'options',
+            title: 'Моето местоположение',
+            className: 'homeIcon',
+            toggle: false,
+            afterClick(e, btn) {
+                goHome();
+            }
+        });
+
+        map.pm.Toolbar.createCustomControl({
+            name: 'LoadSave',
+            block: 'custom',
+            title: 'Запази / Зареди',
+            className: 'saveIcon',
+            actions: [
+                {
+                    text: 'Запази',
+                    onClick: () => {
+                        saveShapes();
+                    },
+                },
+                {
+                    text: 'Зареди',
+                    onClick: () => {
+                        loadShapes();
+                    },
+                },
+                {
+                    text: 'Изчисти',
+                    onClick: () => {
+                        clearShapes()
+                    },
+                },
+                // {
+                //     text: 'Изтрий',
+                //     onClick: () => {
+                //         clearShapes();
+                //         saveShapes();
+                //     },
+                // },
+                'cancel',
+            ],
+        }
+        );
+
+        map.pm.Toolbar.createCustomControl({
+            name: 'ShapeFile',
+            block: 'custom',
+            title: 'Шейп файл',
+            className: 'shapeFileIcon',
+            actions: [
+                {
+                    text: 'Зареди шейп файл',
+                    onClick: () => {
+                        openFilePicker("application/zip").then(buf => {
+
+                            shp(buf).then(geojson => {
+                                clearShapes();
+
+                                let gj = L.geoJSON(geojson);
+
+                                gj.addTo(map);
+                                gj.eachLayer(layer => {
+                                    if (layer instanceof L.Path) layer.showMeasurements();
+                                });
+                                wmsServers.remove();
+                                map.flyToBounds(gj.getBounds());
+                            }).catch(() => {
+                                showAlert("Възникна грешка!");
+                            });
+
+                        })
+                    },
+                },
+                {
+                    text: 'Свали шейп файл',
+                    onClick: () => {
+
+                        fg.clearLayers();
+                        map.eachLayer((layer) => {
+                            if ((layer instanceof L.Path || layer instanceof L.Marker) && layer.pm && layer._pmTempLayer == undefined && layer != marker_point && layer != marker_circle) {
+                                fg.addLayer(layer);
+                            }
+                        });
+                        let json = fg.toGeoJSON(10);
+                        shpwrite.zip(json).then(base64 => {
+                            saveFilePicker(base64, 'Geometry.zip', "application/zip");
+                        }).catch(() => {
+                            console.error(e);
+                            showAlert("Възникна грешка!");
+                        });
+
+                    },
+                },
+                'cancel',
+            ],
+        }
+        );
+
+        map.pm.Toolbar.createCustomControl({
+            name: 'GeoJSON',
+            block: 'custom',
+            title: 'GeoJSON',
+            className: 'geoJsonIcon',
+            actions: [
+                {
+                    text: 'Зареди GeoJSON',
+                    onClick: () => {
+                        openFilePicker("application/json").then(buf => {
+                            try {
+                                let json = new TextDecoder().decode(buf);
+
+                                clearShapes();
+
+                                let gj = L.geoJSON(JSON.parse(json));
+                                gj.addTo(map);
+                                gj.eachLayer(layer => {
+                                    if (layer instanceof L.Path) layer.showMeasurements();
+                                });
+                                wmsServers.remove();
+                                map.flyToBounds(gj.getBounds());
+                            } catch (e) {
+                                console.error(e);
+                                showAlert("Възникна грешка!");
+                            }
+                        });
+                    },
+                },
+                {
+                    text: 'Свали GeoJSON',
+                    onClick: () => {
+                        try {
+                            fg.clearLayers();
+                            map.eachLayer((layer) => {
+                                if ((layer instanceof L.Path || layer instanceof L.Marker) && layer.pm && layer._pmTempLayer == undefined && layer != marker_point && layer != marker_circle) {
+                                    fg.addLayer(layer);
+                                }
+                            });
+
+                            let json = fg.toGeoJSON(10);
+                            if (json instanceof Object) json = JSON.stringify(json);
+
+                            let base64 = btoa(unescape(encodeURIComponent(json)));
+
+                            saveFilePicker(base64, 'Geometry.json', "application/json");
+                        } catch (e) {
+                            showAlert("Възникна грешка!");
+                        }
+                    },
+                },
+                'cancel',
+            ],
+        });
+
+        map.pm.addControls({
+            position: 'topleft',
+            drawCircleMarker: false,
+            drawText: false,
+        });
+
+        const customTranslation = {
+            "tooltips": {
+                "placeMarker": "Кликни за да поставиш маркер",
+                "firstVertex": "Кликни за да поставиш първата точка",
+                "continueLine": "Кликни за да продължиш фигурата",
+                "finishLine": "Кликни на съществуващ маркер за край",
+                "finishPoly": "Кликни на първия маркер за край",
+                "finishRect": "Кликни за край",
+                "startCircle": "Кликни за да поставиш кръг",
+                "finishCircle": "Кликни за да завършиш кръга",
+                "placeCircleMarker": "Кликни за да поставиш гръгъл маркер"
+            },
+            "actions": {
+                "finish": "Край",
+                "cancel": "Отказ",
+                "removeLastVertex": "Премахни последната точка"
+            },
+            "buttonTitles": {
+                "drawMarkerButton": "Постави Маркер",
+                "drawPolyButton": "Нарисувай Полигон",
+                "drawLineButton": "Нарисувай Линия",
+                "drawCircleButton": "Нарисувай Кръг",
+                "drawRectButton": "Нарисувай Правоъгълник",
+                "editButton": "Редактирай",
+                "dragButton": "Премести",
+                "cutButton": "Изрежи",
+                "deleteButton": "Изтрий",
+                "drawCircleMarkerButton": "Нарисувай Кръгъл Маркер",
+                "snappingButton": "Snap dragged marker to other layers and vertices",
+                "pinningButton": "Pin shared vertices together"
+            }
+        };
+
+        map.pm.setLang('bulgarian', customTranslation, 'en');
+
+        var polyline = L.polyline([], { stroke: false, interactive: false, pmIgnore: true }).addTo(map).showMeasurements({ showTotalDistance: false });
+        var marker_point = L.marker([0, 0]).addTo(map);
+        var marker_circle = L.circle([0, 0], { radius: 10, color: 'yellow' }).addTo(map);
+
+        var fg = L.featureGroup();
+
+
+        map.on('pm:drawstart', ({ workingLayer }) => {
+            if (!(workingLayer instanceof L.Marker)) workingLayer.showMeasurements({ showTotalDistance: false });
+
+            workingLayer.on('pm:vertexadded', e => {
+                workingLayer.updateMeasurements({ showTotalDistance: false });
+            });
+            workingLayer.on('pm:snapdrag', e => {
+                if (e.shape == 'Circle') {
+                    let center = e.layer.getLatLng();
+                    let marker = e.marker.getLatLng();
+                    if (marker && center) {
+                        polyline.setLatLngs([center, marker]);
+                    }
+                }
+                else if (e.shape != 'Marker') {
+                    let poly = e.layer.getLatLngs();
+                    let marker = e.marker.getLatLng();
+                    if (marker && poly.length > 0) {
+                        polyline.setLatLngs([poly[poly.length - 1], marker]);
+                    }
+                }
+
+            });
+        });
+        map.on('pm:drawend', () => {
+            polyline.setLatLngs([]);
+            saveShapesDelayed();
+        });
+        map.on('pm:create', ({ layer }) => {
+            if (!(layer instanceof L.Marker)) layer.showMeasurements({ showTotalDistance: false });
+            saveShapesDelayed();
+        });
+        map.on('pm:cut', ({ layer }) => {
+            layer.showMeasurements();
+            //layer.updateMeasurements();
+            saveShapesDelayed();
+        });
+        map.on('pm:drag', ({ layer }) => {
+            //layer.showMeasurements();
+            layer.updateMeasurements();
+            saveShapesDelayed();
+        });
+        map.on('pm:remove', ({ layer }) => {
+            saveShapesDelayed();
+        });
+        map.on('pm:update', ({ layer }) => {
+            saveShapesDelayed();
+        });
+        map.on('pm:dragend', ({ layer }) => {
+            saveShapesDelayed();
+        });
+        map.on('pm:split', ({ layer }) => {
+            saveShapesDelayed();
+        });
+        map.on('pm:enable', ({ layer }) => {
+            saveShapesDelayed();
+        });
+        map.on('pm:globaleditmodetoggled', ({ enabled }) => {
+            if (!enabled) saveShapesDelayed();
+        });
+
+        function showAlert(message) {
+            if (window.AndroidGSM) {
+                AndroidGSM.showToast("<font color='#ff0000' ><b>" + message + "</b></font>");
+            } else {
+                alert(message);
+            }
+        }
+
+        function clearShapes() {
+            map.eachLayer((layer) => {
+                if ((layer instanceof L.Path || layer instanceof L.Marker) && layer.pm && layer._pmTempLayer == undefined && layer != marker_point && layer != marker_circle) {
+                    layer.remove();
+                }
+            });
+        }
+
+        function loadShapes() {
+            let data = null;
+            if (window.AndroidGSM) {
+                data = AndroidGSM.loadFile();
+            } else {
+                data = localStorage.getItem('myLayers');
+            }
+
+            if (data) {
+                try {
+                    clearShapes();
+
+                    data = JSON.parse(data);
+                    let gjson = L.geoJSON().addData(data).addTo(map);
+
+                    gjson.eachLayer(layer => {
+                        //layer.addTo(map);
+                        if (layer instanceof L.Path) layer.showMeasurements(); // Must be called once already added to map
+                    });
+
+                    map.flyToBounds(gjson.getBounds());
+                } catch (e) {
+                    showAlert("Възникна грешка!");
+                }
+            }
+        }
+
+        let tmout = null;
+        function saveShapesDelayed() {
+            // if (tmout) clearTimeout(tmout);
+            // tmout = setTimeout(() => saveShapes(), 100);
+        }
+        function saveShapes() {
+            fg.clearLayers();
+            map.eachLayer((layer) => {
+
+                if ((layer instanceof L.Path || layer instanceof L.Marker) && layer.pm && layer._pmTempLayer == undefined && layer != marker_point && layer != marker_circle) {
+                    fg.addLayer(layer);
+                }
+            });
+
+            if (window.AndroidGSM) {
+                AndroidGSM.saveFile(JSON.stringify(fg.toGeoJSON(10)));
+            } else {
+                localStorage.setItem('myLayers', JSON.stringify(fg.toGeoJSON(10)));
+            }
+            tmout = null;
+        }
+        function saveFilePicker(base64, filename, type) {
+            if (window.AndroidGSM) {
+                AndroidGSM.saveFilePicker(base64, filename, type);
+            } else {
+                let bytes = atob(base64);
+                buf = new Uint8Array(bytes.length);
+                for (i = 0, l = bytes.length; i < l; i++) {
+                    buf[i] = bytes.charCodeAt(i);
+                }
+
+                var blob = new Blob([buf], { type: "octet/stream" });
+
+                if (window.navigator.msSaveOrOpenBlob) {
+                    window.navigator.msSaveOrOpenBlob(blob, filename);
+                } else {
+                    const a = document.createElement('a');
+                    document.body.appendChild(a);
+                    const url = window.URL.createObjectURL(blob);
+                    a.href = url;
+                    a.download = filename;
+                    a.click();
+                    setTimeout(() => {
+                        window.URL.revokeObjectURL(url);
+                        document.body.removeChild(a);
+                    }, 0)
+                }
+            }
+        }
+
+        var openFilePromiseResolver = null;
+        function openFilePickerResult(base64) {
+            if (openFilePromiseResolver instanceof Function) {
+                let bytes = atob(base64);
+                buf = new Uint8Array(bytes.length);
+                for (i = 0, l = bytes.length; i < l; i++) {
+                    buf[i] = bytes.charCodeAt(i);
+                }
+                openFilePromiseResolver(buf);
+            } else {
+                console.error("NOT A RESOLVER", openFilePromiseResolver);
+            }
+        }
+        function openFilePicker(type) {
+            if (window.AndroidGSM) {
+                return new Promise((resolve) => {
+                    window.AndroidGSM.openFilePicker(type);
+                    openFilePromiseResolver = resolve;
+                });
+            } else {
+                return new Promise((resolve) => {
+                    let fn = (event) => {
+                        let file = event.target.files[0];
+                        document.getElementById('theFile').removeEventListener('change', fn);
+
+                        file.arrayBuffer().then(resolve);
+                    }
+                    document.getElementById('theFile').addEventListener('change', fn);
+                    document.getElementById('theFile').click();
+                });
+            }
+        }
+
+        var loaded = false;
+
+        function goHome() {
+            wmsServers.remove();
+            map.flyTo(marker_point.getLatLng());
+        }
+
+        function setGPSPosition(lat, lng, alt, precision) {
+            if (!loaded) {
+                wmsServers.remove();
+                map.flyTo([lat, lng], 18);
+                loaded = true;
+                //loadShapes();
+            }
+            else {
+                //map.setView([lat,lng]);
+            }
+            marker_point.setLatLng([lat, lng]);
+            marker_circle.setLatLng([lat, lng]);
+            marker_circle.setRadius(precision / 2);
+        }
+        function getInfoPrepare() {
+            document.querySelector("#infoDialogContent").innerHTML = 'Зареждане на данни ...<br/><br/><i>Моля изчакайте</i>';
+            document.querySelector("#infoDialogWrapper").style.display = 'flex';
+        }
+        function getInfoReturn(res) {
+            document.querySelector("#infoDialogContent").innerHTML = res;
+            document.querySelector("#infoDialogWrapper").style.display = 'flex';
+        }
+        function getInfoError() {
+            document.querySelector("#infoDialogContent").innerHTML = '<span style="color:red">Информацията не можа да бъде намерена!</span>';
+        }
+        function doSelectReturn(res) {
+            if (res) {
+                res = JSON.parse(res);
+                searchPolygon = L.polygon(res, { color: "green" }).addTo(map);
+                map.flyToBounds(searchPolygon.getBounds());
+                searchPolygon.showMeasurements();
+            }
+        }
+        function doSelectError() {
+
+        }
+        function doSearchReturn(res) {
+            if (!(res instanceof Array)) res = JSON.parse(res);
+
+            res = res.map(ring => {
+                return ring.map(c => [c[1], c[0]])
+            })
+
+            searchPolygon = L.polygon(res, { color: "green" }).addTo(map);
+            map.flyToBounds(searchPolygon.getBounds());
+            searchPolygon.showMeasurements();
+        }
+        function doSearchError(error) {
+            showAlert(error);
+
+            document.querySelector('#ekatte').disabled = false;
+            document.querySelector('#searchEkatte').value = "Търсене";
+        }
+    </script>
+</body>
+
+</html>
